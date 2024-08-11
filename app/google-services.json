@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "410357761114",
+    "project_id": "fire-app-f3de7",
+    "storage_bucket": "fire-app-f3de7.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:410357761114:android:1ba736fb819efb547e0463",
+        "android_client_info": {
+          "package_name": "com.digi.fieryapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "410357761114-rvak5qp2r74e0d9skua4hl0o74eu3186.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.digi.fieryapp",
+            "certificate_hash": "49c819d2b5c79c673503a3bf4efd1f74274b0073"
+          }
+        },
+        {
+          "client_id": "410357761114-6h4773omheui9a98gqigkgg275fl74qr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA186B4kp6iM3qvQ9Lnk3wWNsLXFFSowms"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "410357761114-6h4773omheui9a98gqigkgg275fl74qr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
