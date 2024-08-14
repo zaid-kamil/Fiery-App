@@ -26,6 +26,30 @@ data class AppState(
     val errorMessage: String = "",
 )
 
+
+class AppViewModel() : ViewModel() {
+    private val _appState = MutableStateFlow(AppState())
+    val appState = _appState.asStateFlow()
+
+    fun onSignInResult(signInResult: SignInResult) {
+        if (signInResult.error != null) {
+            _appState.value = AppState(
+                loginStatus = LoginStatus.LOGGED_OUT,
+                errorMessage = signInResult.error.message ?: "Unknown error"
+            )
+        } else {
+            _appState.value = AppState(
+                loginStatus = LoginStatus.LOGGED_IN,
+                errorMessage = ""
+            )
+        }
+    }
+
+    fun resetState(){
+        _appState.value = AppState()
+    }
+}
+
 data class SignInResult(
     val data: UserData?,
     val error: Exception?,
@@ -36,21 +60,6 @@ data class UserData(
     val email: String?,
     val photoUrl: String?,
 )
-
-class AppViewModel() : ViewModel() {
-    private val _appState = MutableStateFlow(AppState())
-    val appState = _appState.asStateFlow()
-
-    init {
-
-    }
-
-    private fun login() {
-        _appState.value = AppState(
-            loginStatus = LoginStatus.IN_PROGRESS
-        )
-    }
-}
 
 class GoogleAuthUiClient(
     private val context: Context,
@@ -113,6 +122,17 @@ class GoogleAuthUiClient(
         } catch (e: Exception) {
             e.printStackTrace()
             if (e is CancellationException) throw e
+        }
+    }
+
+    fun getSignedInUser(): UserData?{
+        val user = auth.currentUser
+        return user?.let {
+            UserData(
+                uid = it.uid,
+                email = user.email,
+                photoUrl = user.photoUrl.toString()
+            )
         }
     }
 }

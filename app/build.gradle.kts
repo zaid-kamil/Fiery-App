@@ -70,7 +70,7 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation("androidx.lifecycle:lifecycle-livedata:2.8.4")
     implementation("com.google.android.gms:play-services-auth:20.4.1")
-    implementation("androidx.credentials:credentials:1.5.0-alpha04")
-    implementation("androidx.credentials:credentials-play-services-auth:1.5.0-alpha04")
+
 }

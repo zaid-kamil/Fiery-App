@@ -15,37 +15,20 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.digi.fieryapp.R
-import kotlinx.coroutines.delay
 
 @Composable
 fun LoginScreen(
     modifier: Modifier = Modifier,
-    navController: NavHostController,
     state: AppState,
+    onLoginClicked: () -> Unit = {}
 ) {
-    var rotation by remember { mutableFloatStateOf(0f) }
-
-    LaunchedEffect(Unit) {
-        while (true) {
-            rotation += 1f
-            delay(1L)
-        }
-    }
     Scaffold {
         Box(
             modifier = modifier
@@ -59,9 +42,7 @@ fun LoginScreen(
                 Image(
                     painter = painterResource(id = R.drawable.gem1),
                     contentDescription = null,
-                    modifier = Modifier
-                        .size(70.dp)
-                        .graphicsLayer { this.rotationY = rotation }
+                    modifier = Modifier.size(70.dp)
                 )
                 Spacer(modifier = Modifier.padding(16.dp))
                 Text(
@@ -70,9 +51,7 @@ fun LoginScreen(
                 )
                 Spacer(modifier = Modifier.padding(16.dp))
                 OutlinedButton(
-                    onClick = {
-
-                    },
+                    onClick = onLoginClicked,
                     modifier = Modifier.width(200.dp)
                 ) {
                     Text(text = "Login with Google")
@@ -97,7 +76,6 @@ fun LoginScreen(
 @Composable
 private fun LoginScreenPreview() {
     LoginScreen(
-        navController = rememberNavController(),
         state = AppState()
     )
 }
