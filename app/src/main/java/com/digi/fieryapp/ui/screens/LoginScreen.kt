@@ -70,7 +70,9 @@ fun LoginScreen(
                 )
                 Spacer(modifier = Modifier.padding(16.dp))
                 OutlinedButton(
-                    onClick = { /*TODO*/ },
+                    onClick = {
+
+                    },
                     modifier = Modifier.width(200.dp)
                 ) {
                     Text(text = "Login with Google")
