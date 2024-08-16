@@ -18,14 +18,14 @@ import kotlinx.coroutines.tasks.await
 enum class LoginStatus {
     LOGGED_IN,
     IN_PROGRESS,
-    LOGGED_OUT
+    LOGGED_OUT,
+    FAILED,
 }
 
 data class AppState(
     val loginStatus: LoginStatus = LoginStatus.LOGGED_OUT,
     val errorMessage: String = "",
 )
-
 
 class AppViewModel() : ViewModel() {
     private val _appState = MutableStateFlow(AppState())
@@ -34,7 +34,7 @@ class AppViewModel() : ViewModel() {
     fun onSignInResult(signInResult: SignInResult) {
         if (signInResult.error != null) {
             _appState.value = AppState(
-                loginStatus = LoginStatus.LOGGED_OUT,
+                loginStatus = LoginStatus.FAILED,
                 errorMessage = signInResult.error.message ?: "Unknown error"
             )
         } else {
@@ -47,6 +47,13 @@ class AppViewModel() : ViewModel() {
 
     fun resetState(){
         _appState.value = AppState()
+    }
+
+    fun setSignInInProgress() {
+        _appState.value = AppState(
+            loginStatus = LoginStatus.IN_PROGRESS,
+            errorMessage = ""
+        )
     }
 }
 

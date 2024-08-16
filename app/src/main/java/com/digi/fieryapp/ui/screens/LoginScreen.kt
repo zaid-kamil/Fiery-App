@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -27,7 +28,7 @@ import com.digi.fieryapp.R
 fun LoginScreen(
     modifier: Modifier = Modifier,
     state: AppState,
-    onLoginClicked: () -> Unit = {}
+    onLoginClicked: () -> Unit = {},
 ) {
     Scaffold {
         Box(
@@ -50,17 +51,22 @@ fun LoginScreen(
                     style = MaterialTheme.typography.headlineSmall
                 )
                 Spacer(modifier = Modifier.padding(16.dp))
-                OutlinedButton(
-                    onClick = onLoginClicked,
-                    modifier = Modifier.width(200.dp)
-                ) {
-                    Text(text = "Login with Google")
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Image(
-                        imageVector = Icons.Default.AccountCircle,
-                        contentDescription = null,
-                        colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
-                    )
+
+                if (state.loginStatus == LoginStatus.IN_PROGRESS) {
+                    CircularProgressIndicator()
+                } else {
+                    OutlinedButton(
+                        onClick = onLoginClicked,
+                        modifier = Modifier.width(200.dp)
+                    ) {
+                        Text(text = "Login with Google")
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Image(
+                            imageVector = Icons.Default.AccountCircle,
+                            contentDescription = null,
+                            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary)
+                        )
+                    }
                 }
             }
             Image(
