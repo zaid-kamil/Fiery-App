@@ -4,15 +4,19 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.digi.fieryapp.R
 import com.google.android.gms.auth.api.identity.BeginSignInRequest
 import com.google.android.gms.auth.api.identity.SignInClient
 import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 enum class LoginStatus {
@@ -22,9 +26,34 @@ enum class LoginStatus {
     FAILED,
 }
 
+enum class ChatListStatus {
+    LOADING,
+    SUCCESS,
+    ERROR,
+}
+
+enum class ChatSendStatus {
+    EMPTY,
+    SENDING,
+    SUCCESS,
+    ERROR,
+}
+
+data class ChatMessage(
+    val message: String,
+    val userData: UserData,
+    val timestamp: Long,
+)
+
 data class AppState(
     val loginStatus: LoginStatus = LoginStatus.LOGGED_OUT,
     val errorMessage: String = "",
+    val chatList: List<ChatMessage> = emptyList(),
+    val message: String = "",
+    val sendingError: String = "",
+    val loadingError: String = "",
+    val chatListStatus: ChatListStatus = ChatListStatus.LOADING,
+    val chatSendStatus: ChatSendStatus = ChatSendStatus.EMPTY,
 )
 
 class AppViewModel() : ViewModel() {
@@ -45,7 +74,7 @@ class AppViewModel() : ViewModel() {
         }
     }
 
-    fun resetState(){
+    fun resetState() {
         _appState.value = AppState()
     }
 
@@ -55,6 +84,70 @@ class AppViewModel() : ViewModel() {
             errorMessage = ""
         )
     }
+
+    private val db = Firebase.firestore
+
+    private fun updateChatList() {
+
+    }
+
+    private fun sendMessage(userData: UserData) {
+        val state = _appState.value
+        if (state.message.isEmpty()) return
+        _appState.update { it.copy(chatSendStatus = ChatSendStatus.SENDING) }
+        val chatMessage = ChatMessage(
+            message = state.message,
+            userData = userData,
+            timestamp = System.currentTimeMillis(),
+        )
+        viewModelScope.launch {
+            try {
+                val reference = db.collection("chat").add(chatMessage).await()
+                if (reference.id.isNotEmpty()) {
+                    _appState.update {
+                        it.copy(
+                            chatSendStatus = ChatSendStatus.SUCCESS,
+                            message = "",
+                            sendingError = "",
+                        )
+                    }
+                } else {
+                    _appState.update {
+                        it.copy(
+                            chatSendStatus = ChatSendStatus.ERROR,
+                            sendingError = "⚠️ Unknown error"
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _appState.update {
+                    it.copy(
+                        chatSendStatus = ChatSendStatus.ERROR,
+                        sendingError = "⚠️ ${e.message ?: "Unknown error"}"
+                    )
+                }
+            }
+        }
+    }
+
+    fun onChatEvent(event: AppEvent){
+        when (event){
+            AppEvent.OnRefreshChatList -> {}
+            is AppEvent.OnSendEvent -> {
+                sendMessage(event.userData)
+            }
+            is AppEvent.OnUpdateMessage -> {
+                _appState.update { it.copy(message = event.message) }
+            }
+        }
+    }
+}
+
+sealed class AppEvent {
+    data class OnSendEvent(val userData: UserData) : AppEvent()
+    data class OnUpdateMessage(val message: String) : AppEvent()
+    data object OnRefreshChatList : AppEvent()
 }
 
 data class SignInResult(
@@ -132,7 +225,7 @@ class GoogleAuthUiClient(
         }
     }
 
-    fun getSignedInUser(): UserData?{
+    fun getSignedInUser(): UserData? {
         val user = auth.currentUser
         return user?.let {
             UserData(
