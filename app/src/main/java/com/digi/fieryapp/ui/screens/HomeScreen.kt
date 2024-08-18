@@ -2,19 +2,15 @@ package com.digi.fieryapp.ui.screens
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -59,30 +55,28 @@ fun HomeScreen(
                     onValueChange = { onEvent(AppEvent.OnUpdateMessage(it)) },
                     label = { Text("Type your message!") },
                     modifier = Modifier.weight(8f),
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                when (state.chatSendStatus) {
-                    ChatSendStatus.SENDING -> {
-                        CircularProgressIndicator()
-                    }
-
-                    else -> {
-                        FloatingActionButton(
-                            onClick = {
-                                userData?.let {
-                                    onEvent(AppEvent.OnSendEvent(userData))
+                    trailingIcon = {
+                        when (state.chatSendStatus) {
+                            ChatSendStatus.SENDING -> {
+                                CircularProgressIndicator()
+                            }
+                            else -> {
+                                IconButton(
+                                    onClick = {
+                                        userData?.let {
+                                            onEvent(AppEvent.OnSendEvent(userData))
+                                        }
+                                    },
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.AutoMirrored.Default.Send,
+                                        contentDescription = "send"
+                                    )
                                 }
-                            },
-                            modifier = Modifier.weight(2f),
-                            shape = MaterialTheme.shapes.small,
-                        ) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Default.Send,
-                                contentDescription = "send"
-                            )
+                            }
                         }
                     }
-                }
+                )
             }
         }
     ) {
