@@ -3,6 +3,7 @@ package com.digi.fieryapp.ui.screens
 import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.digi.fieryapp.R
@@ -40,9 +41,9 @@ enum class ChatSendStatus {
 }
 
 data class ChatMessage(
-    val message: String,
-    val userData: UserData,
-    val timestamp: Long,
+    val message: String = "",
+    val userData: UserData = UserData(),
+    val timestamp: Long = System.currentTimeMillis(),
 )
 
 data class AppState(
@@ -59,7 +60,6 @@ data class AppState(
 class AppViewModel() : ViewModel() {
     private val _appState = MutableStateFlow(AppState())
     val appState = _appState.asStateFlow()
-
     fun onSignInResult(signInResult: SignInResult) {
         if (signInResult.error != null) {
             _appState.value = AppState(
@@ -86,9 +86,36 @@ class AppViewModel() : ViewModel() {
     }
 
     private val db = Firebase.firestore
-
     private fun updateChatList() {
-
+        _appState.update { it.copy(chatListStatus = ChatListStatus.LOADING) }
+        viewModelScope.launch {
+            try {
+                val result = db.collection("chat").get().await()
+                Log.d("ViewModel", result.size().toString())
+                val updatedChatList = result.documents.mapNotNull { snapShot ->
+                    snapShot.toObject(ChatMessage::class.java) // class casting to ChatMessage
+                }.sortedBy {
+                    it.timestamp
+                }
+                _appState.update {
+                    it.copy(
+                        chatList = updatedChatList,
+                        chatListStatus = ChatListStatus.SUCCESS,
+                        loadingError = ""
+                    )
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                _appState.update {
+                    it.copy(
+                        chatListStatus = ChatListStatus.ERROR,
+                        loadingError = "⚠️ ${e.message ?: "Unknown error"}"
+                    )
+                }
+            }
+            Log.d("ViewModel", "Chat list updated")
+            Log.d("ViewModel", appState.value.chatListStatus.name)
+        }
     }
 
     private fun sendMessage(userData: UserData) {
@@ -98,7 +125,6 @@ class AppViewModel() : ViewModel() {
         val chatMessage = ChatMessage(
             message = state.message,
             userData = userData,
-            timestamp = System.currentTimeMillis(),
         )
         viewModelScope.launch {
             try {
@@ -128,15 +154,19 @@ class AppViewModel() : ViewModel() {
                     )
                 }
             }
+            updateChatList()
         }
     }
 
-    fun onChatEvent(event: AppEvent){
-        when (event){
-            AppEvent.OnRefreshChatList -> {}
+    fun onChatEvent(event: AppEvent) {
+        when (event) {
+            AppEvent.OnRefreshChatList -> {
+                updateChatList()
+            }
             is AppEvent.OnSendEvent -> {
                 sendMessage(event.userData)
             }
+
             is AppEvent.OnUpdateMessage -> {
                 _appState.update { it.copy(message = event.message) }
             }
@@ -156,9 +186,9 @@ data class SignInResult(
 )
 
 data class UserData(
-    val uid: String,
-    val email: String?,
-    val photoUrl: String?,
+    val uid: String = "",
+    val email: String = "",
+    val photoUrl: String = "",
 )
 
 class GoogleAuthUiClient(
@@ -199,7 +229,7 @@ class GoogleAuthUiClient(
                 data = user?.let {
                     UserData(
                         uid = it.uid,
-                        email = user.email,
+                        email = user.email ?: "",
                         photoUrl = user.photoUrl.toString()
                     )
                 },
@@ -230,7 +260,7 @@ class GoogleAuthUiClient(
         return user?.let {
             UserData(
                 uid = it.uid,
-                email = user.email,
+                email = user.email ?: "",
                 photoUrl = user.photoUrl.toString()
             )
         }
