@@ -1,5 +1,6 @@
 package com.digi.fieryapp.ui.screens
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -120,7 +121,7 @@ fun HomeScreen(
 
                     ChatListStatus.SUCCESS -> {
                         items(state.chatList) { msg ->
-                            MessageCard(msg)
+                            MessageCard(msg, userData)
                         }
                     }
 
@@ -140,31 +141,67 @@ fun HomeScreen(
 
 @Composable
 fun MessageCard(chatMessage: ChatMessage, userData: UserData? = null) {
+    val currentUser = userData?.uid == chatMessage.userData.uid
     Row(
-        modifier = Modifier.padding(8.dp)
+        modifier = Modifier
+            .padding(8.dp)
+            .fillMaxSize(),
+        horizontalArrangement = if (currentUser) {
+            Arrangement.End
+        } else {
+            Arrangement.Start
+        }
     ) {
-        AsyncImage(
-            model = chatMessage.userData.photoUrl,
-            contentDescription = chatMessage.userData.uid,
-            modifier = Modifier.clip(
-                MaterialTheme.shapes.extraLarge
-            )
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        val currentUser = userData?.uid == chatMessage.userData.uid
-        Card(
-            colors = CardDefaults.cardColors(
-                containerColor = MaterialTheme.colorScheme.secondary
-            )
-        ){
-            Column(
-                modifier = Modifier.padding(8.dp)
-            ) {
-                Text(
-                    text = chatMessage.userData.email,
-                    style = MaterialTheme.typography.labelSmall
+        if (currentUser) {
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.secondary
                 )
-                Text(text = chatMessage.message)
+            ) {
+                Column(
+                    modifier = Modifier.padding(8.dp)
+                ) {
+                    Text(
+                        text = chatMessage.userData.email,
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                    Text(text = chatMessage.message)
+                }
+            }
+            Spacer(modifier = Modifier.width(8.dp))
+            AsyncImage(
+                model = chatMessage.userData.photoUrl,
+                contentDescription = chatMessage.userData.uid,
+                modifier = Modifier.clip(
+                    MaterialTheme.shapes.extraLarge
+                )
+            )
+
+
+
+        } else {
+            AsyncImage(
+                model = chatMessage.userData.photoUrl,
+                contentDescription = chatMessage.userData.uid,
+                modifier = Modifier.clip(
+                    MaterialTheme.shapes.extraLarge
+                )
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Card(
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.primary
+                )
+            ) {
+                Column(
+                    modifier = Modifier.padding(8.dp)
+                ) {
+                    Text(
+                        text = chatMessage.userData.email,
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                    Text(text = chatMessage.message)
+                }
             }
         }
     }
